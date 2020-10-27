@@ -178,9 +178,9 @@
     </property>
     <layout class="QVBoxLayout" name="verticalLayout_2">
      <item>
-      <widget class="QPushButton" name="pushButton_MedFlit">
+      <widget class="QPushButton" name="pushButton_MedFilt">
        <property name="text">
-        <string>2.1 Median Fliter</string>
+        <string>2.1 Median Filter</string>
        </property>
       </widget>
      </item>

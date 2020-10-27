@@ -19,7 +19,10 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.pushButton_ColSep.clicked.connect(self.pushButton_ColSep_onClick)
 		self.pushButton_ImgFlip.clicked.connect(self.pushButton_ImgFlip_onClick)
 		self.pushButton_Blend.clicked.connect(self.pushButton_Blend_onClick)
-	
+		self.pushButton_MedFilt.clicked.connect(self.pushButton_MedFilt_onClick)
+		self.pushButton_GauBlur.clicked.connect(self.pushButton_GauBlur_onClick)
+		self.pushButton_BilaFilt.clicked.connect(self.pushButton_BilaFilt_onClick)
+
 	#1.1 load image
 	@QtCore.pyqtSlot()
 	def pushButton_LoadImg_onClick(self):
@@ -77,13 +80,45 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
 
 		#prepare orignal picture and flip picture as source
 		oriImage = cv2.imread('./Dataset_opencvdl/Q1_Image/Uncle_Roger.jpg')
+		flipped = cv2.flip(oriImage,1)
 
 		#open window with track bar
 		cv2.namedWindow('blending')
-		flipped = cv2.flip(oriImage,1)
 		cv2.imshow('blending',flipped)
 		cv2.createTrackbar('Blend', 'blending', 0, 255, self.updateImg)
 
+	#2.1 median filter
+	@QtCore.pyqtSlot()
+	def pushButton_MedFilt_onClick(self):
+		#close other windows 
+		cv2.destroyAllWindows()
+
+		#load image and add median filter
+		img = cv2.imread('./Dataset_opencvdl/Q2_Image/cat.png')
+		median = cv2.medianBlur(img,7)
+		cv2.imshow('median',median)
+
+	#2.2 gaussian blur
+	@QtCore.pyqtSlot()
+	def pushButton_GauBlur_onClick(self):
+		#close other windows 
+		cv2.destroyAllWindows()
+
+		#load image and add median filter
+		img = cv2.imread('./Dataset_opencvdl/Q2_Image/cat.png')
+		gau = cv2.GaussianBlur(img,(3,3),0)
+		cv2.imshow('Gaussian',gau)
+
+	#2.3 bilateral filter
+	@QtCore.pyqtSlot()
+	def pushButton_BilaFilt_onClick(self):
+		#close other windows 
+		cv2.destroyAllWindows()
+
+		#load image and add median filter
+		img = cv2.imread('./Dataset_opencvdl/Q2_Image/cat.png')
+		gau = cv2.bilateralFilter(img,9,90,90)
+		cv2.imshow('Bilateral',gau)
 
 if __name__ == "__main__": #main function
 	def run_app():

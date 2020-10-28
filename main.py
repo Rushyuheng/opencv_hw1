@@ -22,6 +22,7 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.pushButton_MedFilt.clicked.connect(self.pushButton_MedFilt_onClick)
 		self.pushButton_GauBlur.clicked.connect(self.pushButton_GauBlur_onClick)
 		self.pushButton_BilaFilt.clicked.connect(self.pushButton_BilaFilt_onClick)
+		self.pushButton_Tran.clicked.connect(self.pushButton_Tran_onClick)
 
 	#1.1 load image
 	@QtCore.pyqtSlot()
@@ -119,6 +120,44 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
 		img = cv2.imread('./Dataset_opencvdl/Q2_Image/cat.png')
 		gau = cv2.bilateralFilter(img,9,90,90)
 		cv2.imshow('Bilateral',gau)
+
+	#4 image transformation
+	@QtCore.pyqtSlot()	
+	def pushButton_Tran_onClick(self):
+		#close other windows 
+		cv2.destroyAllWindows()
+
+		#get value from line edit object
+		rotation = int(self.lineEdit_Rot.text())
+		scaling = float(self.lineEdit_Scale.text())	
+		tx = int(self.lineEdit_Tx.text())
+		ty = int(self.lineEdit_Ty.text())
+
+		#load image 
+		img = cv2.imread('./Dataset_opencvdl/Q4_Image/Parrot.png') 
+		cv2.imshow('orignal',img)
+		rows = img.shape[0]
+		cols = img.shape[1]
+
+		#creat new picture with parrot on the center
+		black = np.zeros((img.shape[0], img.shape[1], 3), np.uint8)
+		crop = img[0:168,76:244] # cut the parrot out
+		offsetY = int ((black.shape[0] - crop.shape[0])/2)
+		offsetX = int ((black.shape[1] - crop.shape[1])/2)
+		black[offsetY:offsetY + crop.shape[0],offsetX:offsetX + crop.shape[1]] = crop
+
+		tx = (160 + tx) - (black.shape[1] / 2) #calculate new relative tx
+		ty = (84 + ty) - (black.shape[0] / 2) #calculate new relative ty
+
+		#do rotation and scaling first
+		rotM = cv2.getRotationMatrix2D((black.shape[1] / 2,black.shape[0] / 2),rotation,scaling)
+		dst = cv2.warpAffine(black,rotM,(cols,rows))
+
+		#do shifting
+		shiftM= np.float32([[1,0,tx],[0,1,ty]])
+		dst = cv2.warpAffine(dst,shiftM,(cols,rows))
+		#cv2.circle(dst,(360, 384), 1, (255, 0, 0), -1) #reference point
+		cv2.imshow('Image RST',dst)
 
 if __name__ == "__main__": #main function
 	def run_app():

@@ -23,6 +23,11 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
 		self.pushButton_GauBlur.clicked.connect(self.pushButton_GauBlur_onClick)
 		self.pushButton_BilaFilt.clicked.connect(self.pushButton_BilaFilt_onClick)
 		self.pushButton_Tran.clicked.connect(self.pushButton_Tran_onClick)
+		self.pushButton_EdgGauBlur.clicked.connect(self.pushButton_EdgGauBlur_onClick)
+		self.pushButton_SobX.clicked.connect(self.pushButton_SobX_onClick)
+		self.pushButton_SobY.clicked.connect(self.pushButton_SobY_onClick)
+		self.pushButton_Mag.clicked.connect(self.pushButton_Mag_onClick)
+
 
 	#1.1 load image
 	@QtCore.pyqtSlot()
@@ -120,6 +125,113 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
 		img = cv2.imread('./Dataset_opencvdl/Q2_Image/cat.png')
 		gau = cv2.bilateralFilter(img,9,90,90)
 		cv2.imshow('Bilateral',gau)
+
+	#3 convolve2D
+	def convolve2D(self,image, kernel):
+		xKernShape = kernel.shape[0]
+		yKernShape = kernel.shape[1]
+		xImgShape = image.shape[0]
+		yImgShape = image.shape[1]
+
+	    # Shape of Output Convolution
+		output = np.zeros((xImgShape, yImgShape))
+		imagePadded = np.zeros((image.shape[0] + 2, image.shape[1] + 2)) #do zero padding
+		imagePadded[1:-1, 1:-1] = image #filled the image back
+
+		for y in range(0,yImgShape):
+			for x in range(0,xImgShape):
+				try:
+					output[x, y] = (kernel * imagePadded[x: x + xKernShape, y: y + yKernShape]).sum()
+				except:
+					break
+
+		if output.min() < 0:# shift to positive domain for sobel filter normalization
+			output = np.absolute(output)
+
+		output = output / output.max() * 255 # normalize to 255
+		return output.astype('uint8')
+
+	#3.1 gaussian filter implement
+	@QtCore.pyqtSlot()
+	def pushButton_EdgGauBlur_onClick(self):
+		#close other windows 
+		cv2.destroyAllWindows()
+
+		#generate gaussian filter
+		x, y = np.mgrid[-1:2,-1:2]
+		gaussianFilter = np.exp(-(x**2 + y**2))
+		gaussianFilter = gaussianFilter / gaussianFilter.sum()
+
+		#load image and apply gaussian filter
+		img = cv2.imread('./Dataset_opencvdl/Q3_Image/Chihiro.jpg')
+		img = cv2.cvtColor(img,cv2.COLOR_RGB2GRAY) # convert to gray scale
+		blur = self.convolve2D(img,gaussianFilter)
+		cv2.imshow('Gaussian Blur',blur)
+
+	#3.2 sobel X implement
+	@QtCore.pyqtSlot()
+	def pushButton_SobX_onClick(self):
+		#close other windows 
+		cv2.destroyAllWindows()
+
+		#generate filter
+		x, y = np.mgrid[-1:2,-1:2]
+		gaussianFilter = np.exp(-(x**2 + y**2))
+		gaussianFilter = gaussianFilter / gaussianFilter.sum()
+		sobelx = np.array([[-1,0,1],[-2,0,2],[-1,0,1]])
+
+		#load image and apply filter
+		img = cv2.imread('./Dataset_opencvdl/Q3_Image/Chihiro.jpg')
+		img = cv2.cvtColor(img,cv2.COLOR_RGB2GRAY) # convert to gray scale
+		blur = self.convolve2D(img,gaussianFilter)
+		blur = self.convolve2D(blur,sobelx)
+		cv2.imshow('sobel X',blur)
+
+	#3.3 sobel Y implement
+	@QtCore.pyqtSlot()
+	def pushButton_SobY_onClick(self):
+		#close other windows 
+		cv2.destroyAllWindows()
+
+		#generate filter
+		x, y = np.mgrid[-1:2,-1:2]
+		gaussianFilter = np.exp(-(x**2 + y**2))
+		gaussianFilter = gaussianFilter / gaussianFilter.sum()
+		sobely = np.array([[1,2,1],[0,0,0],[-1,-2,-1]])
+
+		#load image and apply filter
+		img = cv2.imread('./Dataset_opencvdl/Q3_Image/Chihiro.jpg')
+		img = cv2.cvtColor(img,cv2.COLOR_RGB2GRAY) # convert to gray scale
+		blur = self.convolve2D(img,gaussianFilter)
+		blur = self.convolve2D(blur,sobely)
+		cv2.imshow('sobel Y',blur)
+
+	#3.3 magnitude implement
+	@QtCore.pyqtSlot()
+	def pushButton_Mag_onClick(self):
+		#close other windows 
+		cv2.destroyAllWindows()
+
+		#generate filter
+		x, y = np.mgrid[-1:2,-1:2]
+		gaussianFilter = np.exp(-(x**2 + y**2))
+		gaussianFilter = gaussianFilter / gaussianFilter.sum()
+		sobelx = np.array([[-1,0,1],[-2,0,2],[-1,0,1]])		
+		sobely = np.array([[1,2,1],[0,0,0],[-1,-2,-1]])
+
+		#load image and apply filter
+		img = cv2.imread('./Dataset_opencvdl/Q3_Image/Chihiro.jpg')
+		img = cv2.cvtColor(img,cv2.COLOR_RGB2GRAY) # convert to gray scale
+		blur = self.convolve2D(img,gaussianFilter)
+		gx = self.convolve2D(blur,sobelx)
+		gy = self.convolve2D(blur,sobely)
+		print(gx)
+		mag = np.sqrt((gx.astype('int')**2) + (gy.astype('int')**2))
+
+		#normalize
+		mag = mag / mag.max() * 255
+		mag = mag.astype('uint8')
+		cv2.imshow('Magnitude',mag)
 
 	#4 image transformation
 	@QtCore.pyqtSlot()	

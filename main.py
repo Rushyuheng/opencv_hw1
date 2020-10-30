@@ -225,7 +225,6 @@ class MainUi(QtWidgets.QMainWindow, Ui_MainWindow):
 		blur = self.convolve2D(img,gaussianFilter)
 		gx = self.convolve2D(blur,sobelx)
 		gy = self.convolve2D(blur,sobely)
-		print(gx)
 		mag = np.sqrt((gx.astype('int')**2) + (gy.astype('int')**2))
 
 		#normalize
